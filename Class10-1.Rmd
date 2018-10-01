@@ -5,14 +5,28 @@ date: "10/1/2018"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo = FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 # the tidyverse package includes the readr package
 
 poll_url <- "https://pollofpolls.eu/get/polls/IT-parliament/format/csv"
-read.csv(poll_url)
+poll_csv <- read_csv(poll_url)
+
+poll_csv
+
+poll_csv %>%
+  summary()
+
+poll_csv %>%
+  gather(key = "party", value = "percent_vote", -date, -firm, -n, -sd, -source) %>%
+  arrange(date) %>%
+  spread(firm, percent_vote)
 
 
+```
+```{r}
+poll_csv %>%
+  ggplot(aes(x = date, y = LN)) + geom_point()
 ```
 
