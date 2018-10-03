@@ -5,23 +5,38 @@ date: "10/1/2018"
 output: html_document
 ---
 
-```{r setup, echo = FALSE, message=FALSE}
+```{r setup, echo = FALSE, message=FALSE, results='hide'}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 # the tidyverse package includes the readr package
 
+```
 poll_url <- "https://pollofpolls.eu/get/polls/IT-parliament/format/csv"
-poll_csv <- read_csv(poll_url)
+poll_csv <- read_csv(poll_url, guess_max = 3000)
 
 poll_csv
 
 poll_csv %>%
   summary()
+```{r}
+#poll_csv <- poll_csv %>% 
+  #mutate(sd = parse_number(sd))
+top_eight <- poll_csv %>%
+  count(firm) %>%
+  arrange(desc(nn)) %>%
+  slice(1:8) %>% 
+  select(firm)
 
 poll_csv %>%
+  filter(firm %in% top_eight$firm) %>%
   gather(key = "party", value = "percent_vote", -date, -firm, -n, -sd, -source) %>%
+  mutate(percent_vote = parse_number(percent_vote)) %>%
+  filter(party == c("LN", "M5S", "FIPDLFI", "PD"), date > "2017-01-01") %>%
   arrange(date) %>%
-  spread(firm, percent_vote)
+  ggplot(aes(x = date, y = percent_vote, color = party)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  geom_smooth() +
+  labs(title = "Polls of Italian Political Parties Over the Last Year")
 
 
 ```
